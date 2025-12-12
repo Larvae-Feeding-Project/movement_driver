@@ -14,7 +14,7 @@ class MovementDriver:
         except FileNotFoundError:
             print('No movement data file found')
         except Exception as e:
-            print("Exception occurred")
+            print("Exception occurred, could not open data.json")
 
         # Load movement system bounds
         self.XLIMIT, self.YLIMIT, self.ZLIMIT = \
@@ -34,7 +34,7 @@ class MovementDriver:
     def __del__(self):
         """
         Movement system destructor. Resets the system and closes the serial port
-        :return:
+        :return: VOID
         """
         # Close movement serial
         self.reset()
