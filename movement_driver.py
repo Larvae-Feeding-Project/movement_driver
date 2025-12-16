@@ -1,4 +1,6 @@
 import time
+import re
+from pathlib import Path
 import serial
 import json
 
@@ -7,10 +9,15 @@ class MovementDriver:
 
     def __init__(self):
 
+        # Path to movement module directory
+        base_dir = Path(__file__).resolve().parent
+        data_path = base_dir / "movement_data.json"
+
         # Open printer data dict
         try:
-            with open('data.json', 'r') as file:
+            with open(data_path, "r") as file:
                 self.movement_data = json.load(file)
+            print("Movement data loaded")
         except FileNotFoundError:
             print('No movement data file found')
         except Exception as e:
@@ -19,6 +26,7 @@ class MovementDriver:
         # Load movement system bounds
         self.XLIMIT, self.YLIMIT, self.ZLIMIT = \
             self.movement_data['XLIMIT'], self.movement_data['YLIMIT'], self.movement_data['ZLIMIT']
+        print("Loaded system bounds")
 
         # Open serial with the movement system
         try:
@@ -30,6 +38,7 @@ class MovementDriver:
 
         # Reset system
         self.reset()
+        time.sleep(3)
 
     def __del__(self):
         """
@@ -38,6 +47,7 @@ class MovementDriver:
         """
         # Close movement serial
         self.reset()
+        time.sleep(4)
         self.movement_ser.close()
 
     def reset(self):
@@ -45,6 +55,7 @@ class MovementDriver:
         Resets the movement system, which means moving it to (0,0,0) and resetting relative location
         :return: VOID
         """
+        print("Resetting movement system")
         self._send_command("G28")
 
     def move(self, x=None, y=None, z=None, speed=3000):
@@ -82,24 +93,51 @@ class MovementDriver:
         parts.append(f"F{speed}")
         self._send_command(" ".join(parts))
 
-    """
-    Need to check how to receive and present the position
-    """
     def get_position(self):
-        self._send_command("M114")
+        """
+        Return the current position of the movement system
+        :return: tuple of the location (x,y,z)
+        """
 
-    """
-    Need to analyze how to loop responses are built
-    """
+        # Loops until getting a location
+        while True:
+            # Make sure the return list actually has location data
+            rx_lst = self._send_command("M114")
+            if len(rx_lst) < 2:
+                continue
+            loc_str = rx_lst[-2]  # Returns the location string
+
+            # Extract x, y, z values
+            match = re.search(
+                r'X:(-?\d+(?:\.\d+)?)\s+Y:(-?\d+(?:\.\d+)?)\s+Z:(-?\d+(?:\.\d+)?)', loc_str
+            )
+            if match:
+                break
+
+        x, y, z = map(float, match.groups())
+        return x, y, z
+
     def _send_command(self, command):
+        """
+        Sends a command to the movement system
+        :param command: String of the command to be sent to the movement system
+        :return: list of the responses the movement system sent back
+        """
         # Encode and send the command to the movement system
+        print(">> Sending command: " + str(command))
         self.movement_ser.write((command + "\n").encode())
         self.movement_ser.flush()
 
-        # Read and print all responses until an "ok" or empty line
+        # Read and save all responses until an "ok" or empty line
+        self.movement_ser.reset_input_buffer()
+        resp_lst = []
         while True:
             resp = self.movement_ser.readline().decode("ascii", errors="ignore").strip()
-            if resp:
-                print("<<", resp)
-            if resp == "ok" or resp == "":
+            print("<<", resp)  # In the future change to log!!!
+            resp_lst.append(resp)
+
+            # Received acknowledgement
+            if resp == "ok" or resp == "" or resp == " ok":
                 break
+
+        return resp_lst

@@ -1,10 +1,10 @@
 import time
-from movement_driver import MovementDriver
+from movement_driver.movement_driver import MovementDriver
 
 #"M115",               # firmware info
 #"M114"                # report position
 
-SLEEP_TIME = 1.5
+SLEEP_TIME = 3
 # ---------------------------
 # LIST OF PREDEFINED G-CODE LOCATIONS TO MOVE TO
 # ---------------------------
@@ -163,13 +163,14 @@ gcode_list = [
 
 
 movement_system = MovementDriver()
-print("Connected!")
-print("Running predefined G-code sequence...\n")
+print("predefined_plan: Running predefined G-code sequence...\n")
 
 try:
     for movement_cmd in gcode_list:
         movement_system.move(movement_cmd[0], movement_cmd[1], movement_cmd[2], movement_cmd[3])
         time.sleep(SLEEP_TIME)
+        loc = movement_system.get_position()
+        print("predefined_plan: "+str(loc))
 
 finally:
     print("\nDone. Closing connection...")
