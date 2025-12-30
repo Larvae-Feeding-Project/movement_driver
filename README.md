@@ -9,6 +9,10 @@ examples and utils that can be used for calibration.
 
 -pySerial
 
+-keyboard
+
+-time
+
 
 
 ## Usage

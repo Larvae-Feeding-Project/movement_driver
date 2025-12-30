@@ -1,6 +1,8 @@
 import time
 from movement_driver.movement_driver import MovementDriver
-
+"""
+This script runs a predefined movement plan
+"""
 #"M115",               # firmware info
 #"M114"                # report position
 
