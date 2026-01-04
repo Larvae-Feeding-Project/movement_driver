@@ -8,7 +8,11 @@ import json
 class MovementDriver:
 
     def __init__(self):
-
+        """
+        Movement system constructor. opens local movement data (comport, bounds etc) or receives them from control system
+        (TO BE IMPLEMENTED). Finally sets the injection tip temperature (TO BE IMPLEMENTED) and resets the positions.
+        :return: MovementDriver object
+        """
         # Path to movement module directory
         base_dir = Path(__file__).resolve().parent
         data_path = base_dir / "movement_data.json"
@@ -121,7 +125,7 @@ class MovementDriver:
         """
         Sends a command to the movement system
         :param command: String of the command to be sent to the movement system
-        :return: list of the responses the movement system sent back
+        :return: list of the responses the movement system sent back (until ok)
         """
         # Encode and send the command to the movement system
         print(">> Sending command: " + str(command))
