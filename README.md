@@ -19,6 +19,11 @@ Utils can be found in the movement_utils folder. They can be used for calibratio
 2. predefined_plan: moves the movement system in a pre-built plan. Can be modified for different needs and scenarios.
 3. keypress_controller: Creates a keyboard press based interface with the movement system. Useful for calibration. WORK IN PROGRESS, NOT VALIDATED YET
 
+## TODO's
+1. Add heating system commands
+
+
+
 ## Usage
 IN THE FUTURE WILL BE USED BY CONTROL UNIT
 
