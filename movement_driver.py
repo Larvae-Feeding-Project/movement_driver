@@ -69,7 +69,7 @@ class MovementDriver:
         :param y: y coordinate (float)
         :param z: z coordinate (float)
         :param speed: speed of movement (float)
-        :return: VOID
+        :return: True if moved successfully (including ack of end of movement), else otherwise
         """
         # Validate coordinates only if provided
         if x is not None:
@@ -86,40 +86,54 @@ class MovementDriver:
 
         # Movement command list
         parts = ["G0"]
-
-        if x is not None:
-            parts.append(f"X{x}")
-        if y is not None:
-            parts.append(f"Y{y}")
-        if z is not None:
-            parts.append(f"Z{z}")
-
+        if x is not None: parts.append(f"X{x}")
+        if y is not None: parts.append(f"Y{y}")
+        if z is not None: parts.append(f"Z{z}")
         parts.append(f"F{speed}")
-        self._send_command(" ".join(parts))
+
+        try:
+            self._send_command(" ".join(parts))
+
+            # Make sure the arm is in place before return True
+            # Send M400, which receives OK only after finished moving
+            print(">> Waiting for hardware buffer to clear (M400)...")
+            self._send_command("M400")
+            return True
+        except Exception as e:
+            print(">> Movement Error!")
+            return False
+
+        # maybe verify location with get_position
 
     def get_position(self):
         """
-        Return the current position of the movement system
-        :return: tuple of the location (x,y,z)
+            Return the current position of the movement system
+            :return: tuple of the location (x,y,z) or None if it fails
         """
+        max_retries = 5
+        retries = 0
 
-        # Loops until getting a location
-        while True:
-            # Make sure the return list actually has location data
+        while retries < max_retries:
             rx_lst = self._send_command("M114")
-            if len(rx_lst) < 2:
-                continue
-            loc_str = rx_lst[-2]  # Returns the location string
 
-            # Extract x, y, z values
-            match = re.search(
-                r'X:(-?\d+(?:\.\d+)?)\s+Y:(-?\d+(?:\.\d+)?)\s+Z:(-?\d+(?:\.\d+)?)', loc_str
-            )
-            if match:
-                break
+            # Check if we got enough data
+            if len(rx_lst) >= 2:
+                loc_str = rx_lst[-2]
 
-        x, y, z = map(float, match.groups())
-        return x, y, z
+                # Extract x, y, z values
+                match = re.search(
+                    r'X:(-?\d+(?:\.\d+)?)\s+Y:(-?\d+(?:\.\d+)?)\s+Z:(-?\d+(?:\.\d+)?)', loc_str, re.IGNORECASE)
+
+                if match:
+                    x, y, z = map(float, match.groups())
+                    return x, y, z
+
+            # If we reached here, something went wrong. Increment and wait.
+            retries += 1
+            print(f"Warning: Failed to get position. Retry {retries}/{max_retries}...")
+            time.sleep(0.5)  # Give the hardware/buffer a moment to clear
+
+        return False
 
     def _send_command(self, command):
         """
