@@ -62,6 +62,13 @@ class MovementDriver:
         print("Resetting movement system")
         self._send_command("G28")
 
+    def set_injection_temperature(self, temperature):
+        """
+        Sets the temperature of the injection system (arm heating)
+        :param temperature: temperature in degrees Celsius
+        :return:
+        """
+
     def move(self, x=None, y=None, z=None, speed=3000):
         """
         Move to specific location. If an axis is not specified, the location on that axis will not change
