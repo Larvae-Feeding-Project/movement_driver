@@ -126,7 +126,26 @@ class MovementDriver:
 
         # maybe verify location with get_position
 
-    def move_to_well(self, matrix, plate_type, row, col):
+    def move_to_well(self, matrix, plate_type, row, col, z = 100, speed = 3000):
+        """
+            Move to specified well position
+        :param matrix: matrix the well is in ("MATRIX1", "MATRIX2", "MATRIX3")
+        :param plate_type: plate of 24 or 48 wells ("PLATE48", "PLATE24")
+        :param row: row of the well
+        :param col: col of the well
+        :return: True if moved successfully (including ack of end of movement), else otherwise
+        """
+        if matrix not in ["MATRIX1", "MATRIX2", "MATRIX3"]:
+            print("Invalid matrix name")
+            return False
+        if plate_type not in ["PLATE48", "PLATE24"]:
+            print("Invalid plate name")
+            return False
+
+        # Add more validity checks later
+
+        x, y = self.location_map[matrix][plate_type][row][col]
+        return self.move(x, y, z, speed)
 
 
     def get_position(self):
