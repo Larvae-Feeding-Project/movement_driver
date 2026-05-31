@@ -5,6 +5,23 @@ import serial
 import json
 
 
+def load_json(file_path):
+    """
+        Loads json files and returns them
+        :param file_path: path to json file
+        :return: data structure inside the json if success otherwise returns None
+    """
+    try:
+        with open(file_path, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(f"Error: {file_path} not found.")
+        return None
+    except json.JSONDecodeError:
+        print(f"Error: Could not parse {file_path}. Invalid JSON.")
+        return None
+
+
 class MovementDriver:
 
     def __init__(self):
@@ -16,16 +33,13 @@ class MovementDriver:
         # Path to movement module directory
         base_dir = Path(__file__).resolve().parent
         data_path = base_dir / "movement_data.json"
+        map_path = base_dir / "location_map.json"
 
         # Open printer data dict
-        try:
-            with open(data_path, "r") as file:
-                self.movement_data = json.load(file)
-            print("Movement data loaded")
-        except FileNotFoundError:
-            print('No movement data file found')
-        except Exception as e:
-            print("Exception occurred, could not open data.json")
+        self.movement_data = load_json(data_path)
+
+        # Open location map data
+        self.location_map = load_json(map_path)
 
         # Load movement system bounds
         self.XLIMIT, self.YLIMIT, self.ZLIMIT = \
@@ -111,6 +125,9 @@ class MovementDriver:
             return False
 
         # maybe verify location with get_position
+
+    def move_to_well(self, matrix, plate_type, row, col):
+
 
     def get_position(self):
         """
