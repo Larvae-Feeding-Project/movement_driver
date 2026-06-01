@@ -202,3 +202,26 @@ class MovementDriver:
                 break
 
         return resp_lst
+
+    def emergency_stop(self):
+        """
+            Instantly halts all movement via gcode command and resets the position.
+        """
+        print("[MOVEMENT_SYSTEM]EMERGENCY STOP TRIGGERED!")
+
+        if hasattr(self, 'movement_ser') and self.movement_ser.is_open:
+            # Stop command
+            self.movement_ser.write(b"M410\n")
+            self.movement_ser.flush()
+
+            # Clear out any backlogged ok responses or garbage data
+            self.movement_ser.reset_input_buffer()
+            self.movement_ser.reset_output_buffer()
+
+            time.sleep(0.5)
+            self.move(z=100)
+
+            time.sleep(0.5)
+
+            # Home the system to recover and start fresh
+            self.reset()
