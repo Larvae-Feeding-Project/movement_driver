@@ -55,6 +55,7 @@ class MovementDriver:
             print("Movement system connection error")
 
         # Reset system
+        time.sleep(3)
         self.reset()
         time.sleep(3)
 
@@ -138,13 +139,14 @@ class MovementDriver:
         if matrix not in ["MATRIX1", "MATRIX2", "MATRIX3"]:
             print("Invalid matrix name")
             return False
-        if plate_type not in ["PLATE48", "PLATE24"]:
+        if plate_type.value not in ["PLATE48", "PLATE24"]:
             print("Invalid plate name")
             return False
 
         # Add more validity checks later
 
-        x, y = self.location_map[matrix][plate_type][row][col]
+        x, y = self.location_map[matrix][plate_type.value][row][col]
+        print(f"MOVE TO WELL X,Y: {x}, {y}")
         return self.move(x, y, z, speed)
 
 
@@ -221,7 +223,7 @@ class MovementDriver:
             time.sleep(0.5)
             self.move(z=100)
 
-            time.sleep(0.5)
+            time.sleep(5)
 
             # Home the system to recover and start fresh
             self.reset()
