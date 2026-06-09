@@ -180,10 +180,11 @@ class MovementDriver:
 
         return False
 
-    def _send_command(self, command):
+    def _send_command(self, command, max_wait_seconds=60):
         """
         Sends a command to the movement system
         :param command: String of the command to be sent to the movement system
+        :param max_wait_seconds: Maximum time to wait for an 'ok' before giving up
         :return: list of the responses the movement system sent back (until ok)
         """
         # Encode and send the command to the movement system
@@ -191,16 +192,26 @@ class MovementDriver:
         self.movement_ser.write((command + "\n").encode())
         self.movement_ser.flush()
 
-        # Read and save all responses until an "ok" or empty line
+        # Read and save all responses until an "ok"
         self.movement_ser.reset_input_buffer()
         resp_lst = []
+        start_time = time.time()
+
         while True:
             resp = self.movement_ser.readline().decode("ascii", errors="ignore").strip()
-            print("<<", resp)  # In the future change to log!!!
-            resp_lst.append(resp)
 
-            # Received acknowledgement
-            if resp == "ok" or resp == "" or resp == " ok":
+            # Only process if we actually received data (ignoring 1-second timeouts)
+            if resp:
+                print("<<", resp)  # In the future change to log!!!
+                resp_lst.append(resp)
+
+                # Received acknowledgement
+                if resp == "ok" or resp == " ok":
+                    break
+
+            # Failsafe: prevent infinite loop if the hardware hangs
+            if time.time() - start_time > max_wait_seconds:
+                print(f">> ERROR: Timeout waiting for hardware to complete command: {command}")
                 break
 
         return resp_lst
