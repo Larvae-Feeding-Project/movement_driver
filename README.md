@@ -30,4 +30,4 @@ IN THE FUTURE WILL BE USED BY CONTROL UNIT
 
 ## Contributing
 
-Asaf Shahar and Nitai Gildor
+Asaf Shasha and Nitai Gildor
