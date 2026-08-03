@@ -19,6 +19,12 @@ Utils can be found in the movement_utils folder. They can be used for calibratio
 2. predefined_plan: moves the movement system in a pre-built plan. Can be modified for different needs and scenarios.
 3. keypress_controller: Creates a keyboard press based interface with the movement system. Useful for calibration. WORK IN PROGRESS, NOT VALIDATED YET
 
+## Relevant G-Code Functions
+- 'G28': Return to (X,Y,Z) = (0,0,0)
+- 'G0 Xa Yb Zc Fd: Go to coordinate (a,b,c) with speed 'd'
+- 'M114': Report current location
+
+
 ## TODO's
 1. Add heating system commands
 
@@ -30,4 +36,4 @@ IN THE FUTURE WILL BE USED BY CONTROL UNIT
 
 ## Contributing
 
-Asaf Shahar and Nitai Gildor
+Asaf Shasha and Nitai Gildor
