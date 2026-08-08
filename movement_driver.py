@@ -4,6 +4,9 @@ from pathlib import Path
 import serial
 import json
 
+PHOTO_LOCATION_OFFSETS = {"X": 45, "Y": -4.5}
+PHOTO_HEIGHT = 70
+
 
 def load_json(file_path):
     """
@@ -127,13 +130,15 @@ class MovementDriver:
 
         # maybe verify location with get_position
 
-    def move_to_well(self, matrix, plate_type, row, col, z = 100, speed = 3000):
+    def move_to_well(self, matrix, plate_type, row, col, z=100, speed=3000):
         """
             Move to specified well position
         :param matrix: matrix the well is in ("MATRIX1", "MATRIX2", "MATRIX3")
         :param plate_type: plate of 24 or 48 wells ("PLATE48", "PLATE24")
         :param row: row of the well
         :param col: col of the well
+        :param z: z (height) to go to
+        :speed: speed of movement of the system
         :return: True if moved successfully (including ack of end of movement), else otherwise
         """
         if matrix not in ["MATRIX1", "MATRIX2", "MATRIX3"]:
@@ -149,6 +154,18 @@ class MovementDriver:
         print(f"MOVE TO WELL X,Y: {x}, {y}")
         return self.move(x, y, z, speed)
 
+    def move_to_well_photo_position(self, matrix, plate_type, row, col):
+        """
+            Move to specified well photo position
+        :param matrix: matrix the well is in ("MATRIX1", "MATRIX2", "MATRIX3")
+        :param plate_type: plate of 24 or 48 wells ("PLATE48", "PLATE24")
+        :param row: row of the well
+        :param col: col of the well
+        :return: True if moved successfully (including ack of end of movement), else otherwise
+        """
+
+        return self.move_to_well(matrix, plate_type, row + PHOTO_LOCATION_OFFSETS["X"],
+                                 col + PHOTO_LOCATION_OFFSETS["Y"], PHOTO_HEIGHT)
 
     def get_position(self):
         """
