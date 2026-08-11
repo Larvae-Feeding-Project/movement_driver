@@ -130,7 +130,7 @@ class MovementDriver:
 
         # maybe verify location with get_position
 
-    def move_to_well(self, matrix, plate_type, row, col, z=100, speed=3000):
+    def move_to_well(self, matrix, plate_type, row, col, z=100, speed=3000, delta_x=0.0, delta_y=0.0):
         """
             Move to specified well position
         :param matrix: matrix the well is in ("MATRIX1", "MATRIX2", "MATRIX3")
@@ -151,6 +151,7 @@ class MovementDriver:
         # Add more validity checks later
 
         x, y = self.location_map[matrix][plate_type.value][row][col]
+        x, y = x + delta_x, y + delta_y
         print(f"MOVE TO WELL X,Y: {x}, {y}")
         return self.move(x, y, z, speed)
 
@@ -164,8 +165,8 @@ class MovementDriver:
         :return: True if moved successfully (including ack of end of movement), else otherwise
         """
 
-        return self.move_to_well(matrix, plate_type, row + PHOTO_LOCATION_OFFSETS["X"],
-                                 col + PHOTO_LOCATION_OFFSETS["Y"], PHOTO_HEIGHT)
+        return self.move_to_well(matrix, plate_type, row,
+                                 col , PHOTO_HEIGHT, delta_x=PHOTO_LOCATION_OFFSETS["X"], delta_y=PHOTO_LOCATION_OFFSETS["Y"])
 
     def get_position(self):
         """
