@@ -138,7 +138,9 @@ class MovementDriver:
         :param row: row of the well
         :param col: col of the well
         :param z: z (height) to go to
-        :speed: speed of movement of the system
+        :param speed: speed of movement of the system
+        :param delta_x: x offset (in movement system grid)
+        :param delta_y: y offset (in movement system grid)
         :return: True if moved successfully (including ack of end of movement), else otherwise
         """
         if matrix not in ["MATRIX1", "MATRIX2", "MATRIX3"]:
@@ -151,7 +153,7 @@ class MovementDriver:
         # Add more validity checks later
 
         x, y = self.location_map[matrix][plate_type.value][row][col]
-        x, y = x + delta_x, y + delta_y
+        x, y = round(x + delta_x,1), round(y + delta_y, 1)
         print(f"MOVE TO WELL X,Y: {x}, {y}")
         return self.move(x, y, z, speed)
 
