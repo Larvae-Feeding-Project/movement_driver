@@ -18,10 +18,10 @@ def load_json(file_path):
         with open(file_path, "r") as file:
             return json.load(file)
     except FileNotFoundError:
-        print(f"Error: {file_path} not found.")
+        print(f"[MOVEMENT SYSTEM] Error: {file_path} not found.")
         return None
     except json.JSONDecodeError:
-        print(f"Error: Could not parse {file_path}. Invalid JSON.")
+        print(f"[MOVEMENT SYSTEM] Error: Could not parse {file_path}. Invalid JSON.")
         return None
 
 
@@ -47,15 +47,15 @@ class MovementDriver:
         # Load movement system bounds
         self.XLIMIT, self.YLIMIT, self.ZLIMIT = \
             self.movement_data['XLIMIT'], self.movement_data['YLIMIT'], self.movement_data['ZLIMIT']
-        print("Loaded system bounds")
+        # print("Loaded system bounds")
 
         # Open serial with the movement system
         try:
             self.COMPORT, self.BAUD_RATE = self.movement_data['COMPORT'], self.movement_data['BAUD_RATE']
-            print(f"Connecting to {self.COMPORT} at {self.BAUD_RATE} baud...")
+            print(f"[MOVEMENT SYSTEM] Connecting to {self.COMPORT} at {self.BAUD_RATE} baud...")
             self.movement_ser = serial.Serial(self.COMPORT, self.BAUD_RATE, timeout=1)
         except Exception as e:
-            print("Movement system connection error")
+            print("[MOVEMENT SYSTEM] Movement system connection error")
 
         # Reset system
         time.sleep(3)
@@ -77,7 +77,7 @@ class MovementDriver:
         Resets the movement system, which means moving it to (0,0,0) and resetting relative location
         :return: VOID
         """
-        print("Resetting movement system")
+        print("[MOVEMENT SYSTEM] Resetting movement system")
         self._send_command("G28")
 
     def set_injection_temperature(self, temperature):
@@ -121,11 +121,11 @@ class MovementDriver:
 
             # Make sure the arm is in place before return True
             # Send M400, which receives OK only after finished moving
-            print(">> Waiting for hardware buffer to clear (M400)...")
+            # print(">> Waiting for hardware buffer to clear (M400)...")
             self._send_command("M400")
             return True
         except Exception as e:
-            print(">> Movement Error!")
+            print("[MOVEMENT SYSTEM] Movement Error!")
             return False
 
         # maybe verify location with get_position
@@ -154,7 +154,7 @@ class MovementDriver:
 
         x, y = self.location_map[matrix][plate_type.value][row][col]
         x, y = round(x + delta_x,1), round(y + delta_y, 1)
-        print(f"MOVE TO WELL X,Y: {x}, {y}")
+        print(f"[MOVEMENT SYSTEM] MOVE TO WELL X,Y: {x}, {y}")
         return self.move(x, y, z, speed)
 
     def move_to_well_photo_position(self, matrix, plate_type, row, col):
@@ -195,7 +195,7 @@ class MovementDriver:
 
             # If we reached here, something went wrong. Increment and wait.
             retries += 1
-            print(f"Warning: Failed to get position. Retry {retries}/{max_retries}...")
+            # print(f"Warning: Failed to get position. Retry {retries}/{max_retries}...")
             time.sleep(0.5)  # Give the hardware/buffer a moment to clear
 
         return False
@@ -208,7 +208,7 @@ class MovementDriver:
         :return: list of the responses the movement system sent back (until ok)
         """
         # Encode and send the command to the movement system
-        print(">> Sending command: " + str(command))
+        # print(">> Sending command: " + str(command))
         self.movement_ser.write((command + "\n").encode())
         self.movement_ser.flush()
 
@@ -222,7 +222,7 @@ class MovementDriver:
 
             # Only process if we actually received data (ignoring 1-second timeouts)
             if resp:
-                print("<<", resp)  # In the future change to log!!!
+                # print("<<", resp)  # In the future change to log!!!
                 resp_lst.append(resp)
 
                 # Received acknowledgement
@@ -231,7 +231,7 @@ class MovementDriver:
 
             # Failsafe: prevent infinite loop if the hardware hangs
             if time.time() - start_time > max_wait_seconds:
-                print(f">> ERROR: Timeout waiting for hardware to complete command: {command}")
+                print(f"[MOVEMENT SYSTEM] ERROR: Timeout waiting for hardware to complete command: {command}")
                 break
 
         return resp_lst
@@ -240,7 +240,7 @@ class MovementDriver:
         """
             Instantly halts all movement via gcode command and resets the position.
         """
-        print("[MOVEMENT_SYSTEM]EMERGENCY STOP TRIGGERED!")
+        print("[MOVEMENT_SYSTEM] EMERGENCY STOP TRIGGERED!")
 
         if hasattr(self, 'movement_ser') and self.movement_ser.is_open:
             # Stop command
